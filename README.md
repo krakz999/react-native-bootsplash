@@ -120,22 +120,28 @@ Edit the `ios/YourProjectName/AppDelegate.m` file:
 
 #### Android
 
-1. Create a `bootsplash.xml` file in `android/app/src/main/res/drawable` (create the folder if necessary). You can customize this as you want.
+1. Create a `bootsplash.xml` file in `android/app/src/main/res/layout` (create the folder if necessary). You can customize this as you want.
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center_vertical"
+    android:background="@android:color/white"
+    >
+    <!-- Change the background color of the splash screen with android:background. It can be a system color or a custom one defined in colors.xml -->
 
-<layer-list xmlns:android="http://schemas.android.com/apk/res/android" android:opacity="opaque">
-  <!-- the background color. it can be a system color or a custom one defined in colors.xml -->
-  <item android:drawable="@android:color/white" />
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:srcCompat="@mipmap/ic_launcher" /> 
+        <!--   Change "@mipmap/ic_launcher" to "@mipmap/bootsplash_logo" if you have used the image asset generator -->
 
-  <item>
-    <!-- the app logo, centered horizontally and vertically -->
-    <bitmap
-      android:src="@mipmap/ic_launcher"
-      android:gravity="center" />
-  </item>
-</layer-list>
+
+</LinearLayout>
 ```
 
 2. Edit the `android/app/src/main/java/com/yourprojectname/MainActivity.java` file:
@@ -153,72 +159,8 @@ public class MainActivity extends ReactActivity {
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    RNBootSplash.show(R.drawable.bootsplash, MainActivity.this); // <- display the "bootsplash" xml view over our MainActivity
+    RNBootSplash.show(R.layout.bootsplash, MainActivity.this); // <- display the "bootsplash" xml view over our MainActivity
   }
-```
-
-As Android will not create our main activity before launching the app, we need to display a different activity at start, then switch to our main one.
-
-3. Edit the `android/app/src/main/res/values/styles.xml` file:
-
-```xml
-<resources>
-
-  <!-- Base application theme -->
-  <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
-    <!-- Your base theme customization -->
-  </style>
-
-  <!-- Add the following lines -->
-  <!-- BootTheme should inherit from AppTheme -->
-  <style name="BootTheme" parent="AppTheme">
-    <!-- set bootsplash.xml as activity background -->
-    <item name="android:background">@drawable/bootsplash</item>
-  </style>
-
-</resources>
-```
-
-4. Edit the `android/app/src/main/AndroidManifest.xml` file:
-
-```xml
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-  package="com.rnbootsplashexample">
-
-  <!-- … -->
-
-  <application
-    android:name=".MainApplication"
-    android:label="@string/app_name"
-    android:icon="@mipmap/ic_launcher"
-    android:roundIcon="@mipmap/ic_launcher_round"
-    android:allowBackup="false"
-    android:theme="@style/AppTheme">
-
-    <activity
-      android:name=".MainActivity"
-      android:configChanges="keyboard|keyboardHidden|orientation|screenSize"
-      android:label="@string/app_name"
-      android:windowSoftInputMode="adjustResize"
-      android:exported="true"> <!-- add this line -->
-      <!-- remove the intent-filter from MainActivity -->
-    </activity>
-
-    <!-- add the following lines -->
-    <activity
-      android:name="com.zoontek.rnbootsplash.RNBootSplashActivity"
-      android:theme="@style/BootTheme"> <!-- apply the theme you created at step 3. -->
-      <intent-filter>
-        <action android:name="android.intent.action.MAIN" />
-        <category android:name="android.intent.category.LAUNCHER" />
-      </intent-filter>
-    </activity>
-
-    <!-- … -->
-
-  </application>
-
-</manifest>
 ```
 
 ## Usage
@@ -278,57 +220,6 @@ This tool currently relies on the naming conventions that are used in the `/exam
 <path/to/project>/ios/RNBootSplashExample/Images.xcassets/BootSplashLogo.imageset/bootsplash_logo.png
 <path/to/project>/ios/RNBootSplashExample/Images.xcassets/BootSplashLogo.imageset/bootsplash_logo@2x.png
 <path/to/project>/ios/RNBootSplashExample/Images.xcassets/BootSplashLogo.imageset/bootsplash_logo@3x.png
-```
-
-### Handle deep linking (on Android)
-
-If you want to correctly handle [deep linking](https://developer.android.com/training/app-links/deep-linking) with this package, you should edit the `android/app/src/main/AndroidManifest.xml` file like this:
-
-```xml
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-  package="com.rnbootsplashexample">
-
-  <!-- … -->
-
-  <application
-    android:name=".MainApplication"
-    android:label="@string/app_name"
-    android:icon="@mipmap/ic_launcher"
-    android:roundIcon="@mipmap/ic_launcher_round"
-    android:allowBackup="false"
-    android:theme="@style/AppTheme">
-
-    <activity
-      android:name=".MainActivity"
-      android:configChanges="keyboard|keyboardHidden|orientation|screenSize"
-      android:label="@string/app_name"
-      android:windowSoftInputMode="adjustResize"
-      android:exported="true"
-      android:launchMode="singleTask" /> <!-- set MainActivity android:launchMode to "singleTask" and add android:exported="true" -->
-
-    <activity
-      android:name="com.zoontek.rnbootsplash.RNBootSplashActivity"
-      android:theme="@style/BootTheme"
-      android:launchMode="singleTask"> <!-- set RNBootSplashActivity android:launchMode to "singleTask" -->
-      <intent-filter>
-        <action android:name="android.intent.action.MAIN" />
-        <category android:name="android.intent.category.LAUNCHER" />
-      </intent-filter>
-
-      <!-- add your deep linking instructions inside the RNBootSplashActivity declaration -->
-      <intent-filter>
-        <action android:name="android.intent.action.VIEW" />
-        <category android:name="android.intent.category.DEFAULT" />
-        <category android:name="android.intent.category.BROWSABLE" />
-        <data android:scheme="YOUR APP SCHEME" /> <!-- replace this with your custom scheme -->
-      </intent-filter>
-    </activity>
-
-    <!-- … -->
-
-  </application>
-
-</manifest>
 ```
 
 ## 🕵️‍♂️ Comparison with [react-native-splash-screen](https://github.com/crazycodeboy/react-native-splash-screen)
